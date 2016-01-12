@@ -6,7 +6,6 @@
  */
 
 
-
 #include "RGBdriver.h"
 #define CLK 2 //pin definitions for the driver        
 #define DIO 3
@@ -29,7 +28,25 @@ void loop() {
   if (input!="") { // if connected
     switch (input[0]) {
       case 'V': {
-        // set value specified in rest of V#FFFFFF inpupt
+        // set value specified in rest of V#FFFFFF input
+
+        // function strtol() returns a long when given (string,end pointer,radix)
+        char redV[2] = {input[2],input[3]};
+        char greenV[2] = {input[4],input[5]};
+        char blueV[2] = {input[6],input[7]};
+        
+        red = strtol(redV, NULL, 16);
+        green = strtol(greenV, NULL, 16);
+        blue = strtol(blueV, NULL, 16);
+
+        Driver.begin();
+        Driver.SetColor(red, green, blue);
+        Driver.end();
+        
+        // report back hex values
+        Serial.print(red, HEX);
+        Serial.print(green, HEX);
+        Serial.println(blue, HEX);
         break;
       }
     case 'G' : {
