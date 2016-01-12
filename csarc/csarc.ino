@@ -1,5 +1,14 @@
+/* we'd like to be able to do a couple things with newline-terminated commands.
+ *  
+ *  set a constant color value: "V#FFFFFF"
+ *  make gradient pulses between two colors: "G#000000:#FFFFFF:pulseTime"
+ *  ???
+ */
+
+
+
 #include "RGBdriver.h"
-#define CLK 2//pins definitions for the driver        
+#define CLK 2 //pin definitions for the driver        
 #define DIO 3
 
 RGBdriver Driver(CLK,DIO);
@@ -13,28 +22,46 @@ void setup() {
 }
 
 void loop() {
-  while (Serial.available() > 0) {
-    // each input is in the form 000,123,255\n
-    
-    //parseInt skips the first non-digit and non-minus sign chars, so input is split:
-    red = Serial.parseInt();  // 123
-    green = Serial.parseInt();// (,)123
-    blue = Serial.parseInt(); // (,)123
-    if (Serial.read() == '\n') { //data probably received successfuly
-      red = constrain(red, 0, 255);
-      green = constrain(green, 0, 255);
-      blue = constrain(blue, 0, 255);
 
-      Driver.begin();
-      Driver.SetColor(red, green, blue);
-      Driver.end();
+  char input[255];
 
-      // report back hex values
-      Serial.print(red, HEX);
-      Serial.print(green, HEX);
-      Serial.println(blue, HEX);
-
-      
-     }
+  Serial.readStringUntil('\n').toCharArray(input,255);
+  if (input!="") { // if connected
+    switch (input[0]) {
+      case 'V': {
+        // set value specified in rest of V#FFFFFF inpupt
+        break;
+      }
+    case 'G' : {
+        // run gradient pulse between a and b with appropriate timestep; "G#000000:#123456:time" input
+        break;
+      }
+    }
   }
+
+// TODO: reuse relevant driver code (like two lines)
+//  while (Serial.available() > 0) {
+//    // each input is in the form 000,123,255\n
+//    
+//    //parseInt skips the first non-digit and non-minus sign chars, so input is split:
+//    red = Serial.parseInt();  // 123
+//    green = Serial.parseInt();// (,)123
+//    blue = Serial.parseInt(); // (,)123
+//    if (Serial.read() == '\n') { //data probably received successfuly
+//      red = constrain(red, 0, 255);
+//      green = constrain(green, 0, 255);
+//      blue = constrain(blue, 0, 255);
+//
+//      Driver.begin();
+//      Driver.SetColor(red, green, blue);
+//      Driver.end();
+//
+//      // report back hex values
+//      Serial.print(red, HEX);
+//      Serial.print(green, HEX);
+//      Serial.println(blue, HEX);
+//
+//      
+//     }
+//  }
 }
