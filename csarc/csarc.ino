@@ -5,6 +5,8 @@
 RGBdriver Driver(CLK,DIO);
 static int BAUDRATE = 9600;
 int red,green,blue;
+int* rbg[3] = {&red, &green, &blue};
+// probably actually learn about pointers before using this, but it'd make some things simpler.
 
 void setup() {
   Serial.begin(BAUDRATE);
