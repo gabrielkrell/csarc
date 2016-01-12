@@ -27,24 +27,21 @@ void loop() {
   Serial.readStringUntil('\n').toCharArray(input,255);
   if (input!="") { // if connected
     switch (input[0]) {
-      case 'V': {
-        // set value specified in rest of V#FFFFFF input
-
+      case 'V': { // set value specified in V#FFFFFF input
         // function strtol() returns a long when given (string,end pointer,radix)
-        char redV[2] = {input[2],input[3]};
-        char greenV[2] = {input[4],input[5]};
-        char blueV[2] = {input[6],input[7]};
-        
-        red = strtol(redV, NULL, 16);
-        green = strtol(greenV, NULL, 16);
-        blue = strtol(blueV, NULL, 16);
-
+        long long number = strtol( &input[2], NULL, 16);   // from Stack Exchange
+        // Split them up into r, g, b values
+        int red = number >> 16;
+        int green = number >> 8 & 0xFF;
+        int blue = number & 0xFF;                           // end SE code=
         setOutput(red,green,blue);
         
         // report back hex values
+        // to-do: fix this to include leading zeroes; right now 0F0F0F is transmitted as FFF
         Serial.print(red, HEX);
         Serial.print(green, HEX);
         Serial.println(blue, HEX);
+        
         break;
       }
     case 'G' : {
