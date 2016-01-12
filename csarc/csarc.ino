@@ -39,9 +39,7 @@ void loop() {
         green = strtol(greenV, NULL, 16);
         blue = strtol(blueV, NULL, 16);
 
-        Driver.begin();
-        Driver.SetColor(red, green, blue);
-        Driver.end();
+        setOutput(red,green,blue);
         
         // report back hex values
         Serial.print(red, HEX);
@@ -53,6 +51,22 @@ void loop() {
         // run gradient pulse between a and b with appropriate timestep; "G#000000:#123456:time" input
         break;
       }
+    }
+  }
+}
+
+  void setOutput( int red, int green, int blue) {
+    //"local variable hides a field" :p
+    Driver.begin();
+    Driver.SetColor(red, green, blue);
+    Driver.end();
+  }
+
+  void setOutput( int color[]) {
+    if (sizeof(color)!=3) {
+      // log error message
+    } else {
+      setOutput(color[0],color[1],color[2]);
     }
   }
 
@@ -81,4 +95,4 @@ void loop() {
 //      
 //     }
 //  }
-}
+//}
