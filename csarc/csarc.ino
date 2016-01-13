@@ -6,6 +6,9 @@
  */
 
 
+static boolean DEBUG = true;
+
+
 #include "RGBdriver.h"
 #define CLK 2 //pin definitions for the driver        
 #define DIO 3
@@ -18,9 +21,14 @@ int* rbg[3] = {&red, &green, &blue};
 
 void setup() {
   Serial.begin(BAUDRATE);
+
 }
 
+
+int timeOutCount = 0;
+
 void loop() {
+
 
   char input[255];
 
@@ -41,6 +49,18 @@ void loop() {
         Serial.print(red, HEX);
         Serial.print(green, HEX);
         Serial.println(blue, HEX);
+
+        if (DEBUG) {
+        Serial.print("red: ");
+        Serial.println(red, DEC);
+        Serial.print("green: ");
+        Serial.println(green, DEC);
+        Serial.print("blue: ");
+        Serial.println(blue, DEC);
+        Serial.println("");
+        }
+//        Serial.println("green: "+(int)green);
+//        Serial.println("blue: "+(int)blue);
         
         break;
       }
@@ -49,6 +69,14 @@ void loop() {
         break;
       }
     }
+  } else {
+    // no input;
+    if (timeOutCount > 5*60) { // 5 minutes with no comms
+      setOutput( random(255), random(255), random(255) );
+    }
+
+
+    
   }
 }
 
