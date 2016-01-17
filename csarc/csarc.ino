@@ -9,8 +9,12 @@
 static boolean DEBUGGING_MODE = true; // toggle serial debug text
 static boolean SINGLE_LED = true; // false = Grove LED driver;
                                   // true = RGB LED for at-home testing
+static int R_PIN = 6;   // pins for
+static int G_PIN = 5;   // directly driven
+static int B_PIN = 4;   // test setup
+static int GND = 7;     // (<- so we don't have to split cables)
 #include "RGBdriver.h"
-#define CLK 2 //pin definitions for the driver        
+#define CLK 2 //pin definitions for Grove driver        
 #define DIO 3
 
 RGBdriver Driver(CLK,DIO);
@@ -23,11 +27,11 @@ int* rgb[4] = {&red, &green, &blue};
 // leads to a color variable.
 
 void setup() {
-  if (SINGLE_LED) { // CC on pin 7
-    pinMode(7,OUTPUT);
-    pinMode(6,OUTPUT);
-    pinMode(5,OUTPUT);
-    pinMode(4,OUTPUT);
+  if (SINGLE_LED) {
+    pinMode(R_PIN,OUTPUT);
+    pinMode(G_PIN,OUTPUT);
+    pinMode(B_PIN,OUTPUT);
+    pinMode(GND,OUTPUT);
   }
   Serial.begin(BAUDRATE);
   rgb[4]=0;
@@ -43,8 +47,20 @@ void loop() {
   Serial.readStringUntil('\n').toCharArray(input,255);
   if (input!="") { // if connected    
     switch (input[0]) {
+      case 'c' : { 
+        sClear(); 
+        break; 
+      }
+      case 'B': {
+        *rgb[0]=0;
+        *rgb[1]=0;
+        *rgb[2]=255;
+        setOutput(rgb);
+        if (SINGLE_LED) { Serial.println(digitalRead(B_PIN)); }
+        break;
+      }
       case 'b': {
-        analogWrite(4,150);
+        analogWrite(B_PIN,127.5);
         break;
       }
       case '1': {
@@ -158,17 +174,17 @@ void loop() {
 }
 
 
-  void setOutput( int red, int green, int blue) {
+  void setOutput( int r, int g, int b) {
     //"local variable hides a field" :p
 
     if (!SINGLE_LED) {
       Driver.begin();
-      Driver.SetColor(red, green, blue);
+      Driver.SetColor(r, g, b);
       Driver.end();
     } else { //testing setup: single RGB led with cathode on 7
-      analogWrite(6,red*.5);
-      analogWrite(5,green*.5);
-      analogWrite(4,blue*.5);
+      analogWrite(R_PIN,r);
+      analogWrite(G_PIN,g);
+      analogWrite(B_PIN,b);
     }
   }
 
@@ -252,5 +268,9 @@ void p(char *fmt, ... ){
         vsnprintf(buf, 128, fmt, args);
         va_end (args);
         Serial.print(buf);
+}
+
+void sClear() {
+  for (int x=0; x<40; x++) { Serial.println(); }
 }
 
