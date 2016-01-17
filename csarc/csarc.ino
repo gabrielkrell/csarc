@@ -14,9 +14,9 @@ static boolean SINGLE_LED = true; // false = Grove LED driver;
 #define DIO 3
 
 RGBdriver Driver(CLK,DIO);
-static int BAUDRATE = 9600;
+static int BAUDRATE = 19200;
 int red,green,blue;
-int* rgb[3] = {&red, &green, &blue};
+int* rgb[4] = {&red, &green, &blue};
 // In use, & means "address of"; * means "follow this address".
 // This is an array of pointers (which lead to our RGB vars).  Write
 // to it with *rgb[x], which means "follow the address at rgb[x]" which
@@ -30,6 +30,7 @@ void setup() {
     pinMode(4,OUTPUT);
   }
   Serial.begin(BAUDRATE);
+  rgb[4]=0;
 }
 
 
@@ -42,6 +43,27 @@ void loop() {
   Serial.readStringUntil('\n').toCharArray(input,255);
   if (input!="") { // if connected    
     switch (input[0]) {
+      case 'b': {
+        analogWrite(4,150);
+        break;
+      }
+      case '1': {
+        *rgb[0]=255;
+        *rgb[1]=255;
+        *rgb[2]=255;
+        setOutput(rgb);
+        break;
+      }
+      case 'o': {
+        setOutput(rgb);
+        break;
+      }
+      case '*': {
+        Serial.println(*rgb[0]);
+        Serial.println(*rgb[1]);
+        Serial.println(*rgb[2]);
+        break;
+      }
       case '?': {
         Serial.println(red);
         Serial.println(green);
@@ -50,7 +72,7 @@ void loop() {
       }
       case 'X' : {
         red=0; green=0; blue=0;
-        setOutput(*rgb);
+        setOutput(rgb);
         break;
       }
       case '!': {
@@ -60,10 +82,17 @@ void loop() {
       }
       case 'V': { // set value specified in V#FFFFFF input
         char colorInput[] = {input[1],input[2],input[3],input[4],input[5],input[6],input[7],'\0'}; // who needs loops
-        if (DEBUGGING_MODE) { Serial.print("Serial input:"); Serial.println(colorInput); }
-        decodeHex(colorInput,*rgb);
-        setOutput(*rgb);
+        if (DEBUGGING_MODE) {
+          Serial.print("Serial input:"); 
+          Serial.println(colorInput); 
+        }
+        
+        decodeHex(colorInput,rgb);
+        setOutput(rgb);
 
+        if (DEBUGGING_MODE) {
+          Serial.println("Color set.  Results:");
+        }
         // echo current colors:
         Serial.print('#');
         if (red<=16) {Serial.print('0');}
@@ -74,13 +103,13 @@ void loop() {
         Serial.println(blue, HEX);
 
         if (DEBUGGING_MODE) {
-        Serial.print("red: ");
-        Serial.println(red, DEC);
-        Serial.print("green: ");
-        Serial.println(green, DEC);
-        Serial.print("blue: ");
-        Serial.println(blue, DEC);
-        Serial.println("");
+          Serial.print("red: ");
+          Serial.println(red, DEC);
+          Serial.print("green: ");
+          Serial.println(green, DEC);
+          Serial.print("blue: ");
+          Serial.println(blue, DEC);
+          Serial.println("");
         }
         
         break;
@@ -96,8 +125,10 @@ void loop() {
             timev[x]=input[x+16];
           }
           int col1[4],col2[4];
-          decodeHex(hex1,col1);
-          decodeHex(hex2,col2);
+          int *col1p[4] = {&col1[0],&col1[1],&col1[2]};
+          int *col2p[4] = {&col2[0],&col2[1],&col2[2]};
+          decodeHex(hex1,col1p);
+          decodeHex(hex2,col2p);
 
           float timeVal = atoi(timev); //use strtol or sscanf instead
 
@@ -135,43 +166,47 @@ void loop() {
       Driver.SetColor(red, green, blue);
       Driver.end();
     } else { //testing setup: single RGB led with cathode on 7
-      analogWrite(6,red);
-      analogWrite(5,green);
-      analogWrite(4,blue);
+      analogWrite(6,red*.5);
+      analogWrite(5,green*.5);
+      analogWrite(4,blue*.5);
     }
   }
 
-  void setOutput( int color[]) {
-    Serial.println(color[0]);
-    Serial.println(color[1]);
-    Serial.println(color[2]);
-    Serial.println(color[3]);
+  void setOutput( int *color[]) {
+    Serial.println(); // without this the first line below doesn't show up.
+    Serial.println("---Setting output:---"); // v mysterious
+    Serial.println(*color[0]);
+    Serial.println(*color[1]);
+    Serial.println(*color[2]);
+    Serial.println(*color[3]);
+    Serial.println("---------------------");
 
      
-      setOutput(color[0],color[1],color[2]);
+      setOutput(*color[0],*color[1],*color[2]);
     
   }
 
-  void decodeHex( char hexColor[], int output[] ) { // #FFFFFF
-    hexColor[8] = '\0';
+  void decodeHex( char hexColor[], int * output[] ) { // #FFFFFF
     // function strtol() returns a long when given (string,end pointer,radix)
-    long long number = strtol( &hexColor[1], NULL, 16);   // from Stack Exchange
+    unsigned long number = strtol( &hexColor[1], NULL, 16);   // from Stack Exchange
     // Split them up into r, g, b values    
-    output[0] = number >> 16;
-    output[1] = number >> 8 & 0xFF;
-    output[2] = number & 0xFF;                           // end SE code
-
+    *output[0] = number >> 16;
+    *output[1] = number >> 8 & 0xFF;
+    *output[2] = number & 0xFF;
+    
     if (DEBUGGING_MODE) {
       Serial.println("---decodeHex debugging---");
-      Serial.println("hexColor: ");
+      Serial.println("hexColor[]: ");
       Serial.println(hexColor);
-      Serial.println("number:");
-      char longOut[30];
-      sprintf(longOut, "%lld", number);
-      Serial.println(longOut);
+      Serial.println("unsigned long number:");
+      Serial.println(number);
+      Serial.println("Output[]:");
+      Serial.println(*output[0]);
+      Serial.println(*output[1]);
+      Serial.println(*output[2]);
+      Serial.println(*output[4]);
       Serial.println("output:");
-      printArray(output);
-      Serial.println();
+      printArray(*output);
       Serial.println("--------------------------");
       Serial.println();
     }
@@ -182,8 +217,13 @@ void loop() {
     int x=0;
     while (r[x]!='\0') {
       Serial.print(r[x]);
+      Serial.print(' ');
       x++;
     }
+   Serial.println();
+   Serial.print(r[0]);
+   Serial.print(r[1]);
+   Serial.println(r[2]);
   }
   
 
@@ -194,7 +234,7 @@ void loop() {
     double percentPerTick = tick/1;
     for (float percentage = 0; percentage+=percentPerTick; percentage < 1) {
       gradientValue(col1, col2, percentage,*rgb);
-      setOutput(*rgb);
+      setOutput(rgb);
     }
   }
 
