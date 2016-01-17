@@ -5,10 +5,10 @@
  *  ???
  */
 
-
-static boolean DEBUG = true;
-
-
+#include <stdarg.h>
+static boolean DEBUGGING_MODE = true; // toggle serial debug text
+static boolean SINGLE_LED = true; // false = Grove LED driver;
+                                  // true = RGB LED for at-home testing
 #include "RGBdriver.h"
 #define CLK 2 //pin definitions for the driver        
 #define DIO 3
@@ -16,41 +16,64 @@ static boolean DEBUG = true;
 RGBdriver Driver(CLK,DIO);
 static int BAUDRATE = 9600;
 int red,green,blue;
-int* rbg[3] = {&red, &green, &blue};
-// probably actually learn about pointers before using this, but it'd make some things simpler.
+int* rgb[3] = {&red, &green, &blue};
+// In use, & means "address of"; * means "follow this address".
+// This is an array of pointers (which lead to our RGB vars).  Write
+// to it with *rgb[x], which means "follow the address at rgb[x]" which
+// leads to a color variable.
 
 void setup() {
+  if (SINGLE_LED) { // CC on pin 7
+    pinMode(7,OUTPUT);
+    pinMode(6,OUTPUT);
+    pinMode(5,OUTPUT);
+    pinMode(4,OUTPUT);
+  }
   Serial.begin(BAUDRATE);
-
 }
 
 
 int timeOutCount = 0;
+char input[128];
 
 void loop() {
 
-
-  char input[255];
-
+  
   Serial.readStringUntil('\n').toCharArray(input,255);
-  if (input!="") { // if connected
+  if (input!="") { // if connected    
     switch (input[0]) {
-      case 'V': { // set value specified in V#FFFFFF input
-        // function strtol() returns a long when given (string,end pointer,radix)
-        long long number = strtol( &input[2], NULL, 16);   // from Stack Exchange
-        // Split them up into r, g, b values
-        int red = number >> 16;
-        int green = number >> 8 & 0xFF;
-        int blue = number & 0xFF;                           // end SE code=
+      case '?': {
+        Serial.println(red);
+        Serial.println(green);
+        Serial.println(blue);
+        break;
+      }
+      case 'X' : {
+        red=0; green=0; blue=0;
+        setOutput(*rgb);
+        break;
+      }
+      case '!': {
+        red=0; green=0; blue=0;
         setOutput(red,green,blue);
-        
-        // report back hex values
-        // to-do: fix this to include leading zeroes; right now 0F0F0F is transmitted as FFF
+        break;
+      }
+      case 'V': { // set value specified in V#FFFFFF input
+        char colorInput[] = {input[1],input[2],input[3],input[4],input[5],input[6],input[7],'\0'}; // who needs loops
+        if (DEBUGGING_MODE) { Serial.print("Serial input:"); Serial.println(colorInput); }
+        decodeHex(colorInput,*rgb);
+        setOutput(*rgb);
+
+        // echo current colors:
+        Serial.print('#');
+        if (red<=16) {Serial.print('0');}
         Serial.print(red, HEX);
+        if (green<=16) {Serial.print('0');}
         Serial.print(green, HEX);
+        if (blue<=16) {Serial.print('0');}
         Serial.println(blue, HEX);
 
-        if (DEBUG) {
+        if (DEBUGGING_MODE) {
         Serial.print("red: ");
         Serial.println(red, DEC);
         Serial.print("green: ");
@@ -59,13 +82,36 @@ void loop() {
         Serial.println(blue, DEC);
         Serial.println("");
         }
-//        Serial.println("green: "+(int)green);
-//        Serial.println("blue: "+(int)blue);
         
         break;
       }
     case 'G' : {
         // run gradient pulse between a and b with appropriate timestep; "G#000000:#123456:time" input
+        if (input[9]=='#') {
+          char hex1[7], hex2[7];
+          char timev[7]; //well our buffer is 7 chars now.
+          for (int x=0; x<7; x++) {
+            hex1[x]=input[x+1];
+            hex2[x]=input[x+9];
+            timev[x]=input[x+16];
+          }
+          int col1[4],col2[4];
+          decodeHex(hex1,col1);
+          decodeHex(hex2,col2);
+
+          float timeVal = atoi(timev); //use strtol or sscanf instead
+
+          gradientPulse(col1,col2,timeVal);
+
+          if (DEBUGGING_MODE) {
+            Serial.println(hex1);
+            Serial.println(hex2);
+            Serial.println(timev);
+          }
+        } else {
+          Serial.println("Error: malformed gradient request");
+          Serial.println(input);
+        }
         break;
       }
     }
@@ -80,44 +126,91 @@ void loop() {
   }
 }
 
+
   void setOutput( int red, int green, int blue) {
     //"local variable hides a field" :p
-    Driver.begin();
-    Driver.SetColor(red, green, blue);
-    Driver.end();
-  }
 
-  void setOutput( int color[]) {
-    if (sizeof(color)!=3) {
-      // log error message
-    } else {
-      setOutput(color[0],color[1],color[2]);
+    if (!SINGLE_LED) {
+      Driver.begin();
+      Driver.SetColor(red, green, blue);
+      Driver.end();
+    } else { //testing setup: single RGB led with cathode on 7
+      analogWrite(6,red);
+      analogWrite(5,green);
+      analogWrite(4,blue);
     }
   }
 
-// TODO: reuse relevant driver code (like two lines)
-//  while (Serial.available() > 0) {
-//    // each input is in the form 000,123,255\n
-//    
-//    //parseInt skips the first non-digit and non-minus sign chars, so input is split:
-//    red = Serial.parseInt();  // 123
-//    green = Serial.parseInt();// (,)123
-//    blue = Serial.parseInt(); // (,)123
-//    if (Serial.read() == '\n') { //data probably received successfuly
-//      red = constrain(red, 0, 255);
-//      green = constrain(green, 0, 255);
-//      blue = constrain(blue, 0, 255);
-//
-//      Driver.begin();
-//      Driver.SetColor(red, green, blue);
-//      Driver.end();
-//
-//      // report back hex values
-//      Serial.print(red, HEX);
-//      Serial.print(green, HEX);
-//      Serial.println(blue, HEX);
-//
-//      
-//     }
-//  }
-//}
+  void setOutput( int color[]) {
+    Serial.println(color[0]);
+    Serial.println(color[1]);
+    Serial.println(color[2]);
+    Serial.println(color[3]);
+
+     
+      setOutput(color[0],color[1],color[2]);
+    
+  }
+
+  void decodeHex( char hexColor[], int output[] ) { // #FFFFFF
+    hexColor[8] = '\0';
+    // function strtol() returns a long when given (string,end pointer,radix)
+    long long number = strtol( &hexColor[1], NULL, 16);   // from Stack Exchange
+    // Split them up into r, g, b values    
+    output[0] = number >> 16;
+    output[1] = number >> 8 & 0xFF;
+    output[2] = number & 0xFF;                           // end SE code
+
+    if (DEBUGGING_MODE) {
+      Serial.println("---decodeHex debugging---");
+      Serial.println("hexColor: ");
+      Serial.println(hexColor);
+      Serial.println("number:");
+      char longOut[30];
+      sprintf(longOut, "%lld", number);
+      Serial.println(longOut);
+      Serial.println("output:");
+      printArray(output);
+      Serial.println();
+      Serial.println("--------------------------");
+      Serial.println();
+    }
+    
+  }
+
+  void printArray( int r[]) {
+    int x=0;
+    while (r[x]!='\0') {
+      Serial.print(r[x]);
+      x++;
+    }
+  }
+  
+
+  void gradientPulse (int col1[], int col2[], float timev) {
+    // in this initial version, gradient pulses are going to be locking.
+    // This is obviously a problem - add an interrupt when you have time.
+    double tick = timev;
+    double percentPerTick = tick/1;
+    for (float percentage = 0; percentage+=percentPerTick; percentage < 1) {
+      gradientValue(col1, col2, percentage,*rgb);
+      setOutput(*rgb);
+    }
+  }
+
+  void gradientValue(int col1[3], int col2[3], float percentage, int output[3]) {
+    output[0] = col1[0]*percentage + col2[0]*(1-percentage);
+    output[1] = col1[1]*percentage + col2[1]*(1-percentage);
+    output[2] = col1[2]*percentage + col2[2]*(1-percentage);
+    
+  }
+
+void p(char *fmt, ... ){
+        char buf[128]; // resulting string limited to 128 chars
+        va_list args;
+        va_start (args, fmt );
+        vsnprintf(buf, 128, fmt, args);
+        va_end (args);
+        Serial.print(buf);
+}
+
