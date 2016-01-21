@@ -48,13 +48,11 @@ void loop() {
   if (input!="") { // if connected    
     switch (input[0]) {
 
-      case 'd': { //enables debug mode, lowercase commands
+      case 'd': {
         DEBUG=!DEBUG;
         Serial.print("Debug mode ");
-        if (DEBUG) 
-          Serial.println("ON");
-         else 
-          Serial.println("OFF");
+        if(DEBUG)Serial.println("ON");
+         else    Serial.println("OFF");
         break;
       }
       
@@ -62,30 +60,25 @@ void loop() {
         char colorInput[] = {input[1],input[2],input[3],input[4],input[5],input[6],input[7],'\0'}; // who needs loops
         if (DEBUG) {
           Serial.print("Serial input:"); 
-          Serial.println(colorInput); 
-        }
-        
+          Serial.println(colorInput);  }
         decodeHex(colorInput,rgb);
         setOutput(rgb);
-
         printColors();
-
         if (DEBUG) {
           Serial.println("Color set.  Results:");
-          Serial.print("red: ");
-          Serial.println(red, DEC);
-          Serial.print("green: ");
-          Serial.println(green, DEC);
-          Serial.print("blue: ");
-          Serial.println(blue, DEC);
-          Serial.println("");
-        }
-        
+          Serial.print("red: ");  Serial.println(red, DEC);
+          Serial.print("green: ");Serial.println(green, DEC);
+          Serial.print("blue: "); Serial.println(blue, DEC);
+          Serial.println(""); }
         break;
       }
+      
     case 'G' : {
-        // run gradient pulse between a and b with appropriate timestep; "G#000000:#123456:time" input
-        if (input[1]=='#' && input[9]=='#') {
+        // run gradient pulse between a and b over a length of time; "G#000000:#123456:time" input
+        if ((input[1]!='#' || input[9]!='#')) {
+          Serial.println("Error: invalid gradient request");
+          Serial.println(input);
+        } else {
           char hex1[8], hex2[8];
           char timev[8]; //well our buffer is 7 chars now.
           for (int x=0; x<7; x++) {
@@ -96,28 +89,64 @@ void loop() {
           int col1[4],col2[4];
           int *col1p[4] = {&col1[0],&col1[1],&col1[2],0};
           int *col2p[4] = {&col2[0],&col2[1],&col2[2],0};
+          
           decodeHex(hex1,col1p);
           decodeHex(hex2,col2p);
-
           float timeVal = atoi(timev); //use strtol or sscanf instead
 
           gradientPulse(col1,col2,timeVal);
-
+          
           if (DEBUG) {
             Serial.println(hex1);
             Serial.println(hex2);
-            Serial.println(timev);
-          }
-        } else {
-          Serial.println("Error: malformed gradient request");
-          Serial.println(input);
+            Serial.println(timev); }
         }
         break;
       }
 
-      // begin debugging char commands
+      // begin debugging char commands go here
       
 
+    }
+
+    if (DEBUG) {
+      switch(input[0]) {
+        case '0' : {
+          setValue(0,0,0);
+          Serial.println("LEDs turned off.");
+          break; }
+        case '1' : {
+          setValue(255,255,0);
+          Serial.println("LEDs turned on.");
+          break; }
+        case 'r' : {
+          setValue(255,0,0);
+          Serial.println("Color set to red.");
+          break;
+        }
+        case 'g' : {
+          setValue(0,255,0);
+          Serial.println("Color set to green.");
+          break;
+        }
+        case 'b' : {
+          setValue(0,0,255);
+          Serial.println("Color set to blue.");
+          break;
+        }
+        case '?' : { // display contents of *rgb: three colors and a null pointer
+          Serial.println("Current color values:");
+          for (int i=0; i<3; i++) {
+            Serial.print(*rgb[i]); Serial.print(',');
+          }
+          Serial.println(*rgb[3]);
+        }
+//        case 
+        
+      }
+
+
+      
     }
   } else {
     // no input;
@@ -241,3 +270,9 @@ void printColors() {
   if (blue<=16) {Serial.print('0');}
   Serial.println(blue, HEX);
 }
+
+void setValue ( int r, int g, int b) {
+  red=r; green=g; blue=b;
+  setOutput(rgb);
+}
+
