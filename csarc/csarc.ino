@@ -1,4 +1,4 @@
-/* we'd like to be able to do a couple things with newline-terminated commands.
+/* csarc allows you to do do a couple things with newline-terminated command:
  *  
  *  set a constant color value: "V#FFFFFF"
  *  make gradient pulses between two colors: "G#000000:#FFFFFF:pulseTime"
@@ -9,10 +9,13 @@
 
 
 static boolean SINGLE_LED = true; // real LED driver or test rig?
-static int R_PIN = 6;   // pins for
-static int G_PIN = 5;   // directly driven
-static int B_PIN = 4;   // test setup
-static int GND = 7;     // ( <-so we don't have to split cables)
+static int R_PIN = 10;   // pins for
+static int G_PIN = 11;   // directly driven
+static int B_PIN = 9;   // test setup
+static int GND = 7;     // ( <-for convenience)
+
+int off[] = {0,0,0};
+int white[] = {255,255,255};
 
 #include "RGBdriver.h"
 #define CLK 2 //pin definitions for Grove driver        
@@ -22,6 +25,7 @@ RGBdriver Driver(CLK,DIO);
 static int BAUDRATE = 19200;
 boolean DEBUG = false; // toggle serial debug text
 int TIMEOUT = 300;  //timeout in seconds before beginning default pattern
+float numdivs = 60.0; //change this to adjust gradient smoothness
 int red,green,blue;
 int* rgb[4] = {&red, &green, &blue, 0};
 // In use, & means "address of"; * means "follow this address".
@@ -37,6 +41,10 @@ void setup() {
     pinMode(GND,OUTPUT);
   }
   Serial.begin(BAUDRATE);
+  
+  setValue(255,255,255); // power-up notification
+  delay(50);
+  setValue(0,0,0);
 }
 
 
@@ -86,27 +94,22 @@ void loop() {
             hex2[x]=input[x+9];
             timev[x]=input[x+16];
           }
-          int col1[4],col2[4];
-          int *col1p[4] = {&col1[0],&col1[1],&col1[2],0};
-          int *col2p[4] = {&col2[0],&col2[1],&col2[2],0};
-          
-          decodeHex(hex1,col1p);
-          decodeHex(hex2,col2p);
-          float timeVal = atoi(timev); //use strtol or sscanf instead
-
-          gradientPulse(col1,col2,timeVal);
-          
-          if (DEBUG) {
-            Serial.println(hex1);
-            Serial.println(hex2);
-            Serial.println(timev); }
+        int col1[4],col2[4];
+        int *col1p[4] = {&col1[0],&col1[1],&col1[2],0};
+        int *col2p[4] = {&col2[0],&col2[1],&col2[2],0};
+        
+        decodeHex(hex1,col1p);
+        decodeHex(hex2,col2p);
+        float timeVal = atol(timev); //use strtol or sscanf instead
+        gradientPulse(col1,col2,timeVal);
+        
+        if (DEBUG) {
+          Serial.println(hex1);
+          Serial.println(hex2);
+          Serial.println(timev); }
         }
         break;
       }
-
-      // begin debugging char commands go here
-      
-
     }
 
     if (DEBUG) {
@@ -116,7 +119,7 @@ void loop() {
           Serial.println("LEDs turned off.");
           break; }
         case '1' : {
-          setValue(255,255,0);
+          setValue(255,255,255);
           Serial.println("LEDs turned on.");
           break; }
         case 'r' : {
@@ -141,7 +144,6 @@ void loop() {
           }
           Serial.println(*rgb[3]);
         }
-//        case 
         
       }
 
@@ -150,8 +152,12 @@ void loop() {
     }
   } else {
     // no input;
-    if (timeOutCount > TIMEOUT) { // after TIMEOUT, flash randomly per second
-      setOutput( random(255), random(255), random(255) ); // change to be nicer (1s gradients?)
+    if (timeOutCount > TIMEOUT) { // after TIMEOUT, do something
+      // maybe timeout and timeout behavior should be configurable over serial.
+      // low priority, bc this will mostly be running before serial comms have
+      // been established.
+      gradientPulse (off, white, 1);
+      // setOutput( random(255), random(255), random(255) ); // change to be nicer (1s gradients?)
     }
 
 
@@ -210,13 +216,16 @@ void loop() {
   }
 
 
-  static int numdivs = 60; //change this to adjust gradient smoothness
-  void gradientPulse (int col1[], int col2[], float timev) {    
+  void gradientPulse (int col1[], int col2[], float timev) { // timev is now in seconds   
     // in this initial version, gradient pulses are going to be locking.
     // This is obviously a problem - add an interrupt when you have time.
 
-    float delayPerTick = (float) timev/numdivs;
+    float delayPerTick = (float) timev*1000/numdivs;
     float   perPerTick = (float) 1/numdivs;
+
+//    Serial.println(timev);
+//    Serial.println(numdivs);
+//    Serial.println(timev/numdivs);
 
     if (DEBUG) {
       Serial.println("---gradientPulse---");
@@ -230,11 +239,16 @@ void loop() {
         Serial.print(col2[i]);
         Serial.print(' '); 
       }
+      Serial.print("delayPerTick = ");
+      Serial.println(delayPerTick);
+      Serial.print("perPerTick = ");
+      Serial.println(perPerTick);
       Serial.println();
     }
     
-    for (float per = 0; per+=perPerTick; per<=1.0) {
-      Serial.println(per);
+    for (float per = 0; per<1.0; per+=perPerTick) {
+      Serial.print(per);
+      Serial.println("/1");
       gradientValue(col1,col2,per,rgb);
       setOutput(rgb);
       delay(delayPerTick);
@@ -245,7 +259,6 @@ void loop() {
     *output[0] = col1[0]*percentage + col0[0]*(1-percentage);
     *output[1] = col1[1]*percentage + col0[1]*(1-percentage);
     *output[2] = col1[2]*percentage + col0[2]*(1-percentage);
-    
   }
 
 void p(char *fmt, ... ){
