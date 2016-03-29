@@ -2,11 +2,16 @@
  *  
  *  set a constant color value: "V#FFFFFF"
  *  make gradient pulses between two colors: "G#000000:#FFFFFF:pulseTime"
- *    \--loop between two colors: "L##000000:#FFFFFF:pulseTime"
+ *    \--loop between two colors: "L#000000:#FFFFFF:pulseTime"
+ *    \--smooth loop between two colors: "S#000000:#FFFFFF:pulseTime
+ *  start flashing between two colors:     "F#000000:#FFFFFF:pulseTime"
+ *  lock for a period of time: "DIS:waitTime"
  *  
  *  Change SINGLE_LED and the color pins to match your hardware.
  *  You can toggle a handy debug mode with "d".
  */
+// TO DO: implement start/stop flashing
+// TO DO: implement smooth gradients
 
 #include <stdarg.h>
 
@@ -37,16 +42,16 @@ boolean debugMode = false;
 char inputBuffer[SERIAL_BUFFER_LENGTH];
 float gradPerc, gradPercPerTick, gradDelayPerTick;
 int gradcol1[3], gradcol2[3];
-boolean gradientLoop, recentActivity = false;
+boolean gradientLoop = false, recentActivity = false;
 
 int red,green,blue;
 int* rgb[4] = {&red, &green, &blue, 0};
 
 // -------------- THREADS ---------------
 #include <TimedAction.h>
-TimedAction   serialThread = TimedAction(1000, &processSerial);
+TimedAction   serialThread = TimedAction(2000, 70, &processSerial);
 TimedAction gradientThread = TimedAction(0,  &gradientStep); // initially disabled in setup()
-TimedAction  timeoutThread = TimedAction(TIMEOUT*1000,  &timeoutAction);
+TimedAction  timeoutThread = TimedAction(TIMEOUT*1000, TIMEOUT*1000,  &timeoutAction);
 
 void setup() {
   if (SINGLE_LED) {
@@ -56,9 +61,9 @@ void setup() {
     pinMode(GND,OUTPUT);
   }
   gradientThread.disable();
+  Serial.setTimeout(10); //must be substantially less than serialThread's execution window
   Serial.begin(BAUDRATE);
-  // power-up notification
-  quickCycle(25);
+  quickCycle(25); // power-up notification
 }
 
 void loop() {  
@@ -70,29 +75,33 @@ void loop() {
 void processSerial() {
   Serial.readBytesUntil('\n',inputBuffer,SERIAL_BUFFER_LENGTH);
   if (inputBuffer!="") { // if connected
-    recentActivity = true;   
+//    if (debugMode) { Serial.print("|");
+//                     for (int x=0; x<10; x++) { Serial.print(inputBuffer[x]); }
+//                     Serial.print("|"); }
+    recentActivity = true;
     switch (inputBuffer[0]) {
-      case 'd': {
-        toggleDebug();
-        break;
-      }
-      case 'V': { // set value specified in V#FFFFFF input
-        processColor(inputBuffer);
-        break;
-      }
-      
-      case 'G' : {
-        processGradient(inputBuffer);
-        break;
-      }
-  
-      case 'L' : {
-        gradientLoop = true;
-        processGradient(inputBuffer);
-        break;
-      }
+      case 'd': { toggleDebug(); break; }
+      case 'V': { processColor(); break; } // set value specified in V#FFFFFF input
+      case 'L' : { gradientLoop = true; processGradient(); break;}
+      case 'G' : { gradientLoop = false; processGradient(); break;}
     }
     if (debugMode) {
+      processDebug();
+    }
+    clearBuffer();
+  } else if (debugMode) { Serial.println("No serial input."); }
+}
+
+void toggleDebug() {
+  debugMode = !debugMode;
+  Serial.print("Debug mode ");
+  if(debugMode) {
+    Serial.println("ON" );  }
+  else {
+    Serial.println("OFF");  }
+}
+
+void processDebug() {
       switch(inputBuffer[0]) {
         case '0' : {
           setValue(0,0,0);
@@ -120,26 +129,24 @@ void processSerial() {
         case '?' : { // display contents of *rgb: three colors and a null pointer
           Serial.println("Current color values:");
           for (int i=0; i<3; i++) {
-            Serial.print(*rgb[i]); Serial.print(',');
+            Serial.print(*rgb[i]);
+            Serial.print(',');
           }
           Serial.println(*rgb[3]);
-        } 
+        }
       }
-    }
-  }
 }
 
-void toggleDebug() {
-  debugMode=!debugMode;
-  Serial.print("Debug mode ");
-  if(debugMode) {
-    Serial.println( "ON");  }
-  else {
-    Serial.println("OFF");  }
-}
-
-void processColor(char input[]) {
-  char colorInput[] = {input[1],input[2],input[3],input[4],input[5],input[6],input[7],'\0'}; // who needs loops
+void processColor() {
+  gradientThread.disable(); // cut off anything else
+  gradientLoop = false;  
+  char colorInput[] = {inputBuffer[1], //premature
+                       inputBuffer[2], //optimization
+                       inputBuffer[3], //but also
+                       inputBuffer[4], //laziness
+                       inputBuffer[5],
+                       inputBuffer[6],
+                       inputBuffer[7],'\0'};
   if (debugMode) {
     Serial.print("Serial input:"); 
     Serial.println(colorInput);  }
@@ -155,37 +162,50 @@ void processColor(char input[]) {
   }
 }
 
-void processGradient(char input[]) {
+void processGradient() {
 // run gradient pulse between a and b over a length of time; "G#000000:#123456:time" input
-        if ((input[1]!='#' || input[9]!='#')) {
-          Serial.println("Error: invalid gradient request");
-          Serial.println(input);
-        } else {
-          char hex1[8], hex2[8];
-          char timev[8]; //well our buffer is 7 chars now.
-          for (int x=0; x<7; x++) {
-            hex1[x]=input[x+1];
-            hex2[x]=input[x+9];
-            timev[x]=input[x+16];
-          }
-        int col1[4],col2[4];
-        int *col1p[4] = {&col1[0],&col1[1],&col1[2],0};
-        int *col2p[4] = {&col2[0],&col2[1],&col2[2],0};
-        
-        decodeHex(hex1,col1p);
-        decodeHex(hex2,col2p);
-        float timeVal = atol(timev); //use strtol or sscanf instead
-        gradientPulseSetup(col1,col2,timeVal);
-        
-        if (debugMode) {
-          Serial.println(hex1);
-          Serial.println(hex2);
-          Serial.println(timev); }
-        }
+  if ((inputBuffer[1]!='#' || inputBuffer[9]!='#')) {
+    Serial.println("Error: invalid gradient request");
+    Serial.println(inputBuffer);
+  } else {
+    char hex1[8], hex2[8];
+    char timev[8];
+    for (int x = 0; x<7; x++) {
+      hex1[x] = inputBuffer[1+x];
+      hex2[x] = inputBuffer[9+x];
+      timev[x] = inputBuffer[17+x];
+    }
+    int col1[4],col2[4];
+    int *col1p[4] = {&col1[0],&col1[1],&col1[2],0};
+    int *col2p[4] = {&col2[0],&col2[1],&col2[2],0};
+
+    if (debugMode) {
+      Serial.println("input char[]s");
+      Serial.println(hex1);
+      Serial.println(hex2);
+      Serial.println(timev); }
+
+    
+    decodeHex(hex1,col1p);
+    decodeHex(hex2,col2p);
+    float timeVal = atol(timev); //use strtol or sscanf instead
+    gradientPulseSetup(col1,col2,timeVal);
+
+    if (debugMode) {
+      Serial.println("col1: ");
+      Serial.print(col1[0]); Serial.print(" "); Serial.print(col1[1]); Serial.print(" "); Serial.println(col1[2]);
+      Serial.println("col2: ");
+      Serial.print(col2[0]); Serial.print(" "); Serial.print(col2[1]); Serial.print(" "); Serial.println(col2[2]);
+      Serial.print("timeVal: ");
+      Serial.println(timeVal);
+    }
+  }
 }
 
 
 void timeoutAction() {
+  
+  if (debugMode) { Serial.println("Processing timeout."); }
   if (!recentActivity) {
     // maybe timeout and timeout behavior should be configurable over serial.
     // low priority, bc this will mostly be running before serial comms have
@@ -195,34 +215,74 @@ void timeoutAction() {
   } 
 }
 
-
-void setOutput( int r, int g, int b) {
-
-  if (!SINGLE_LED) {
-    Driver.begin();
-    Driver.SetColor(r, g, b);
-    Driver.end();
-  } else {
-    analogWrite(R_PIN,r);
-    analogWrite(G_PIN,g);
-    analogWrite(B_PIN,b);
-  }
-}
-
-void setOutput( int *color[]) {
-  
+void gradientPulseSetup (const int col1[3],const int col2[3], float timev) { // timev is now in seconds 
+  gradDelayPerTick = (float) timev*1000/numdivs;
+  gradPercPerTick = (float) 1/numdivs;
+  gradPerc = 0;
   if (debugMode) {
-    Serial.println(); // for some reason a lot of this output
-    Serial.println("---Setting output:---"); // doesn't show up
-    Serial.println(*color[0]);
-    Serial.println(*color[1]);
-    Serial.println(*color[2]);
-    Serial.println(*color[3]);
-    Serial.println("---------------------");
+    Serial.println("---gradientPulse---");
+    Serial.println("col1,col2:");
+    for (int i=0; i<3;i++) {
+      Serial.print(col1[i]);
+      Serial.print(' '); 
+    }
+    Serial.println();
+    for (int i=0; i<3;i++) {
+      Serial.print(col2[i]);
+      Serial.print(' '); 
+    }
+    Serial.print("timev = ");
+    Serial.println(timev);
+    Serial.print("numdivs = ");
+    Serial.println(numdivs);
+    Serial.print("gradDelayPerTick = ");
+    Serial.println(gradDelayPerTick);
+    Serial.print("gradPercPerTick = ");
+    Serial.println(gradPercPerTick);
+    Serial.println();
   }
-    setOutput(*color[0],*color[1],*color[2]);
+
+  for (int x=0; x<3; x++) {
+    gradcol1[x]=col1[x];
+    gradcol2[x]=col2[x];
+  }
   
+  gradientThread.setInterval(gradDelayPerTick);
+  gradientThread.reset();
+  gradientThread.enable();
+  if (debugMode) {
+    Serial.println("Gradient setup done, gradient thread enabled.");
+  }
 }
+
+
+
+void gradientStep() {
+  if (debugMode) { Serial.println("Gradient processing."); }
+  if (gradPerc <= 1.0) {
+    Serial.print(gradPerc);
+    Serial.println("/1");
+    gradientValue(gradcol1, gradcol2, gradPerc, rgb);
+    setOutput(rgb);
+    gradPerc+=gradPercPerTick;
+  }
+  else {
+    if (gradientLoop) {
+      gradPerc = 0;
+      if (debugMode) { Serial.println("Looping gradient."); }
+    } else {
+      if (debugMode) { Serial.println("Halting gradient."); }
+      gradientThread.disable();
+    }
+  }
+}
+
+void gradientValue(int col0[3], int col1[3], float percentage, int *output[3]) {
+  *output[0] = col1[0]*percentage + col0[0]*(1-percentage);
+  *output[1] = col1[1]*percentage + col0[1]*(1-percentage);
+  *output[2] = col1[2]*percentage + col0[2]*(1-percentage);
+}
+
 
 void decodeHex( char hexColor[], int * output[] ) { //in: #FFFFFF\0
   unsigned long number = strtol( &hexColor[1], NULL, 16);
@@ -245,65 +305,6 @@ void decodeHex( char hexColor[], int * output[] ) { //in: #FFFFFF\0
   }    
 }
 
-
-
-
-void gradientPulseSetup (const int col1[3],const int col2[3], float timev) { // timev is now in seconds   
-  // in this initial version, gradient pulses are going to be locking.
-  // This is obviously a problem - add an interrupt when you have time.
-
-  gradDelayPerTick = (float) timev*1000/numdivs;
-  gradPercPerTick = (float) 1/numdivs;
-  if (debugMode) {
-    Serial.println("---gradientPulse---");
-    Serial.println("col1,col2:");
-    for (int i=0; i<3;i++) {
-      Serial.print(col1[i]);
-      Serial.print(' '); 
-    }
-    Serial.println();
-    for (int i=0; i<3;i++) {
-      Serial.print(col2[i]);
-      Serial.print(' '); 
-    }
-    Serial.print("gradDelayPerTick = ");
-    Serial.println(gradDelayPerTick);
-    Serial.print("gradPercPerTick = ");
-    Serial.println(gradPercPerTick);
-    Serial.println();
-  }
-  colorCopy(gradcol1,col1);
-  colorCopy(gradcol2,col2);
-  gradientThread.setInterval(gradDelayPerTick);
-  gradientThread.reset();
-  gradientThread.enable();
-}
-
-
-
-void gradientStep() {
-  if (gradPerc < 1.0) {
-    Serial.print(gradPerc);
-    Serial.println("/1");
-    gradientValue(gradcol1, gradcol2, gradPerc, rgb);
-    setOutput(rgb);
-    gradPerc+=gradPercPerTick;
-  }
-  else {
-    if (gradientLoop = true) {
-      gradPerc = 0;
-    } else {
-      gradientThread.disable();
-    }
-  }
-}
-
-void gradientValue(int col0[3], int col1[3], float percentage, int *output[3]) {
-  *output[0] = col1[0]*percentage + col0[0]*(1-percentage);
-  *output[1] = col1[1]*percentage + col0[1]*(1-percentage);
-  *output[2] = col1[2]*percentage + col0[2]*(1-percentage);
-}
-
 void printColors() {  
   Serial.print('#');
   if (red<=16) {Serial.print('0');}
@@ -314,16 +315,13 @@ void printColors() {
   Serial.println(blue, HEX);
 }
 
-void setValue ( int r, int g, int b) {
-  red=r; green=g; blue=b;
-  setOutput(rgb);
-}
 
-void colorCopy( int recipient[3], const int donor[3] ) {
-  recipient[0] = donor[0];
-  recipient[1] = donor[1];
-  recipient[2] = donor[2];
-}
+//void arrayCopy( int *recipient, const int *donor, int len ) { // make this more generic - should work on ints and chars
+//  //be very careful with len
+//  for (int x = 0; x<len; x++) {
+//    recipient[x] = donor[x];
+//  }
+//}
 
 void quickCycle(int baseTime) {
   setValue(255,0,0);
@@ -336,3 +334,61 @@ void quickCycle(int baseTime) {
   delay(baseTime);
   setValue(0,0,0);
 }
+
+
+void setOutput( int r, int g, int b) {
+
+  if (!SINGLE_LED) {
+    Driver.begin();
+    Driver.SetColor(r, g, b);
+    Driver.end();
+  } else {
+    analogWrite(R_PIN,r);
+    analogWrite(G_PIN,g);
+    analogWrite(B_PIN,b);
+  }
+}
+
+
+
+void setOutput( int *color[]) {  
+  if (debugMode) {
+    Serial.println(); // for some reason a lot of this output
+    Serial.println("---Setting output:---"); // doesn't show up
+    Serial.println(*color[0]);
+    Serial.println(*color[1]);
+    Serial.println(*color[2]);
+    Serial.println(*color[3]);
+    Serial.println("---------------------");
+  }
+    setOutput(*color[0],*color[1],*color[2]);
+}
+
+void setValue ( int r, int g, int b) {
+  gradientThread.disable(); // cut off anything else
+  gradientLoop = false;  
+  red=r; green=g; blue=b;
+  setOutput(rgb);
+}
+
+void clearBuffer() {
+  //optimized for a mostly empty buffer
+  char *ptr = &inputBuffer[0];
+  if(debugMode) {
+    Serial.print("Buffer: [");
+    while (ptr<&inputBuffer[0]+SERIAL_BUFFER_LENGTH && *ptr!=0) {
+      Serial.print(*ptr);
+      *ptr = 0;
+      ptr++;
+    }
+    Serial.print(*ptr);
+    Serial.println( "] wiped.");
+  } else {
+    while (ptr<&inputBuffer[0]+SERIAL_BUFFER_LENGTH && *ptr!=0) {
+      *ptr = 0;
+      ptr++;
+    }
+  }
+  *ptr = 0;
+}
+
