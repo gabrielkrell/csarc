@@ -78,6 +78,7 @@ void setup() {
 void loop() {  
   serialThread.check();
   gradientThread.check();
+  flashThread.check();
   timeoutThread.check();
 }
 
@@ -144,6 +145,7 @@ void processDebugIn() {
 
 void processColor() {
   gradientThread.disable(); // cut off anything else
+  flashThread.disable();
   gradientLoop = false;
   char colorInput[8];
   arrayCopy(colorInput,&inputBuffer[1],7);
@@ -236,17 +238,19 @@ void flashSetup (const int col1[3],const int col2[3], float timev) {
   flashThread.reset();
   flashThread.enable();
   if (debugMode) {
-    Serial.println("Flash setup done, gradient thread enabled.");
+    Serial.println(timev);
+    Serial.println("Flash setup done; flash thread enabled.");
   }
 }
 
 void flash() {
+  if (debugMode) { Serial.print("Flash:");}
   outputColor( flashFirstColor ? flashcol1 : flashcol2 );
   flashFirstColor = !flashFirstColor;
+  if (debugMode) { Serial.print(red); Serial.print(green); Serial.println(blue); }
 }
 
 void timeoutAction() {
-  
   if (debugMode) { Serial.println("Processing timeout."); }
   if (!recentActivity) {
     Serial.print("No recent activity for "); Serial.print(TIMEOUT); Serial.println(" seconds.");
