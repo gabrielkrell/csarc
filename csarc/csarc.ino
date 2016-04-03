@@ -14,10 +14,7 @@
 //        evaluate memory gain from using #define for some constants
 
 #include <stdarg.h>
-
-// JUMPER SETUP FOR COMP
-
-
+#include <Wire.h>
 
 // -------------  LED SETUP -------------
 const boolean GROVE_DRIVER = false; // Grove LED driver or DFRobot shield?
@@ -81,9 +78,11 @@ void setup() {
   Serial.setTimeout(SERIAL_CYCLE_LENGTH_MS/7); //should be substantially less than serialThread's execution window
   Serial.begin(BAUDRATE);
   quickCycle(150); // power-up notification
-  gradientPulseSetup(BLUE,OFF,2);
+  gradientPulseSetup(RED,OFF,1.5);
   gradientLoop = true;
   gradientReversingMode = true;
+  Wire.begin(1); // slave device, address 1
+  Wire.onReceive(processI2CIn); //I guess this'll run between loop()s when we get data; hopefully it won't actually interrupt anything...
 }
 
 void loop() {  
@@ -93,6 +92,26 @@ void loop() {
   timeoutThread.check();
 }
 
+void processI2CIn (int numBytesRead) {
+  for (int x=0; x<numBytesRead; x++) {
+    inputBuffer[x] = Wire.read();
+  }
+  recentActivity = true;
+  switch (inputBuffer[0]) {
+    case 'd': { toggleDebug(); break; }
+    case 'V': { processColor(); break; } // set value specified in V#FFFFFF input
+    case 'S' : { gradientLoop = true; gradientReversingMode = true;  processGradient(); break;}
+    case 'L' : { gradientLoop = true; gradientReversingMode = false;  processGradient(); break;}
+    case 'G' : { gradientLoop = false; processGradient(); break;}
+    case 'F' : { processFlash(); break; }
+  }
+  if (debugMode) {
+    processDebugIn();
+  }
+  clearBuffer();
+}
+
+
 void processSerialIn() {
   Serial.readBytesUntil('\n',inputBuffer,SERIAL_BUFFER_LENGTH);
   if (inputBuffer[0]!=0) {
@@ -100,7 +119,6 @@ void processSerialIn() {
 //    if (debugMode) { Serial.print("|");
 //                     for (int x=0; x<10; x++) { Serial.print(inputBuffer[x]); }
 //                     Serial.print("|"); }
-    recentActivity = true;
     switch (inputBuffer[0]) {
       case 'd': { toggleDebug(); break; }
       case 'V': { processColor(); break; } // set value specified in V#FFFFFF input
