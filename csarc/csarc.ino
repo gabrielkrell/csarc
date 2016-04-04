@@ -12,6 +12,9 @@
 // TO DO: cut off timeout gradient when activity resumes
 //        implement verbosity levels
 //        evaluate memory gain from using #define for some constants
+//        store commands in structs for easy comparisons and transport
+//        implement modeswitching between I2C/serial if the default Wire interrupts are messing things up
+//        improve mode selection
 
 #include <stdarg.h>
 #include <Wire.h>
@@ -178,7 +181,8 @@ void processColor() {
   flashThread.disable();
   gradientLoop = false;
   char colorInput[8];
-  arrayCopy(colorInput,&inputBuffer[1],7);
+  memcpy(colorInput,&inputBuffer[1],7);
+//  arrayCopy(colorInput,&inputBuffer[1],7);
   if (debugMode) {
     Serial.print("Serial input:"); 
     Serial.println(colorInput);  }
@@ -352,9 +356,9 @@ void gradientStep() {
       gradPerc = 0;
       if (gradientReversingMode) {
         int temp[3]; //swap 1 and 2
-        arrayCopy(temp,gradcol1,3);
-        arrayCopy(gradcol1,gradcol2,3);
-        arrayCopy(gradcol2,temp,3);
+        memcpy(temp,gradcol1,3);
+        memcpy(gradcol1,gradcol2,3);
+        memcpy(gradcol2,temp,3);
       }
       if (debugMode) { Serial.println("Looping gradient."); }
     } else {
@@ -413,31 +417,27 @@ void outputColor( int r, int g, int b) {
   }
 }
 
-
-
 void outputColor( int *color[]) {  
   if (debugMode) {
-  
     Serial.println(); // for some reason a lot of this output
     Serial.println("---Setting output:---"); // doesn't show up
-    Serial.println(*color[0]);
-    Serial.println(*color[1]);
-    Serial.println(*color[2]);
-    Serial.println(*color[3]);
+    Serial.print(*color[0]); Serial.print(", ");
+    Serial.print(*color[1]);Serial.print(", ");
+    Serial.print(*color[2]);
+    Serial.print(*color[3]);
     Serial.println("---------------------");
   }
     outputColor(*color[0],*color[1],*color[2]);
 }
 
 void outputColor( int color[]) {  
-  if (debugMode) {
-  
+  if (debugMode) {  
     Serial.println(); // for some reason a lot of this output
     Serial.println("---Setting output:---"); // doesn't show up
-    Serial.println(color[0]);
-    Serial.println(color[1]);
-    Serial.println(color[2]);
-    Serial.println(color[3]);
+    Serial.print(color[0]); Serial.print(", ");
+    Serial.print(color[1]);Serial.print(", ");
+    Serial.print(color[2]);
+    Serial.print(color[3]);
     Serial.println("---------------------");
   }
     outputColor(color[0],color[1],color[2]);
@@ -505,18 +505,6 @@ void printColors() {
   Serial.println(blue, HEX);
 }
 
-void arrayCopy( char recipient[], char donor[], int len) {
-  for (int x=0; x<len; x++) { // apparently takes <1ms, so whatever
-    recipient[x]=donor[x];
-  }
-}
-
-void arrayCopy( int recipient[], int donor[], int len) {
-  for (int x=0; x<len; x++) { // apparently takes <1ms, so whatever
-    recipient[x]=donor[x];
-  }
-}
-
 boolean redundantFlashCommand(const int col1[], const int col2[], int fTime) {
   for (int x=0; x<3; x++) {
     if (flashcol1[x]!=col1[x]) {return false;}
@@ -525,4 +513,3 @@ boolean redundantFlashCommand(const int col1[], const int col2[], int fTime) {
   if (flashTimePerColor_ms != fTime) {return false;}
   return true;
 }
-
