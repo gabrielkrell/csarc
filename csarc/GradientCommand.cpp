@@ -1,17 +1,17 @@
 #include "GradientCommand.h"
 
-GradientCommand::GradientCommand( int col1[3], int col2[3], GradientMode gradMode, int pulselen) {
-	memcpy(this->col1,col1,3);
-	memcpy(this->col2,col2,3);
-	this->gradMode = gradMode;
-	this->pulselen = pulselen;
+GradientCommand::GradientCommand( int col1[3], int col2[3], GradientMode gradMode, seconds pulselen) {
+	this->setCol1(col1);
+	this->setCol2(col2);
+  this->setMode(gradMode);
+  this->setPulse(pulselen);
 };
 
 GradientCommand::GradientCommand( const int col1[3], const int col2[3], const GradientMode gradMode, const seconds pulselen) {
-  memcpy(this->col1,col1,3);
-  memcpy(this->col2,col2,3);
-  this->gradMode = gradMode;
-  this->pulselen = pulselen;
+  this->setCol1(col1);
+  this->setCol2(col2);
+  this->setMode(gradMode);
+  this->setPulse(pulselen);
 };
 
 
@@ -30,19 +30,19 @@ boolean GradientCommand::equals( GradientCommand ogc) {
   return true;
 }
 
-void GradientCommand::setcol1( int col1[3] ) {
+void GradientCommand::setCol1( int col1[3] ) {
   memcpy(this->col1,col1,3);
 }
 
-void GradientCommand::setcol2( int col2[3] ) {
+void GradientCommand::setCol2( int col2[3] ) {
   memcpy(this->col2,col2,3);
 }
 
-void GradientCommand::setcol1( const int col1[3] ) {
+void GradientCommand::setCol1( const int col1[3] ) {
   memcpy(this->col1,col1,3);
 }
 
-void GradientCommand::setcol2( const int col2[3] ) {
+void GradientCommand::setCol2( const int col2[3] ) {
   memcpy(this->col2,col2,3);
 }
 
@@ -51,6 +51,6 @@ void GradientCommand::setMode( GradientMode gradMode) {
 }
 
 void GradientCommand::setPulse( seconds timeInSeconds ) {
-	this->pulselen = timeInSeconds;
+	this->pulselen = 1000*timeInSeconds; // store in millis for precision
 }
 
