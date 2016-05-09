@@ -95,7 +95,7 @@
 			"file": "csarc.ino",
 			"settings":
 			{
-				"buffer_size": 16786,
+				"buffer_size": 16782,
 				"line_ending": "Windows"
 			}
 		},
@@ -275,15 +275,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 16786,
+						"buffer_size": 16782,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1101,
-								1101
+								1097,
+								1097
 							]
 						],
 						"settings":
@@ -567,6 +567,10 @@
 	"output.Deviot|Build1462750564.369484":
 	{
 		"height": 383.0
+	},
+	"output.Deviot|Build1462795577.801291":
+	{
+		"height": 401.0
 	},
 	"output.Deviot|Pio_Install1461530035.239933":
 	{
