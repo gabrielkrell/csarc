@@ -19,6 +19,7 @@
 
 #include <stdarg.h>
 #include <Wire.h>
+#include "GradientState.h"
 #include "GradientCommand.h"
 typedef int milliseconds;
 typedef float seconds;
