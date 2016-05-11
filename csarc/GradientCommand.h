@@ -1,11 +1,10 @@
-#ifndef GradientCommand.h
-#define GradientComamnd.h
+#ifndef GradientCommand_h
+#define GradientCommand_h
 #include <Arduino.h>
 
-
-typedef enum GradientMode {  SINGLE_FWD_LOOP,  FWD_LOOP,  SMOOTH_LOOP,  NO_GRAD };
-typedef float seconds;
-typedef int milliseconds;
+#ifndef Typedefs_h
+#include "Typedefs.h"
+#endif
  
 class GradientCommand {
 	public:

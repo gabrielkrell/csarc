@@ -1,18 +1,28 @@
-#ifndef GradientState.h
-#define GradientState.h
+#ifndef GradientState_h
+#define GradientState_h
 #include <Arduino.h>
+
+#ifndef GradientCommand_h
+#include "GradientCommand.h"
+#endif
+
+#ifndef Typedefs_h
+#include "Typedefs.h"
+#endif
 
 class GradientState {
 public:
-	GradientState()
+	GradientState();
 
 	GradientCommand command;
 	float percent;
 	float percentPerTick;
 	milliseconds delayPerTick;
 	boolean colors_reversed;
-}
 
+};
+
+#endif
 
 /* struct GradientState {
   const GradientCommand * command;
@@ -88,5 +98,3 @@ public:
   *output[2] = col1[2]*percentage + col0[2]*(1-percentage);
 }
 */
-
-#endif

@@ -26,3 +26,13 @@
 *.exe
 *.out
 *.app
+
+# Devoit build files
+/.pioenvs/
+/src/
+.travis.yml
+platformio.ini
+
+# local Sublime settings
+csarc.sublime-workspace
+csarc.sublime-project

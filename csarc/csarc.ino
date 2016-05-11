@@ -15,16 +15,18 @@
 //        store commands in structs for easy comparisons and transport
 //        implement modeswitching between I2C/serial if the default Wire interrupts are messing things up
 //        improve mode selection
-//        recalculate GRAD_TOTAL_TICKS during runtime for better-looking gradients
+//        gradients should have a constant tick speed and a different percentage change to improve behavior of
+//          long gradients
 
 #include <stdarg.h>
 #include <Wire.h>
+#include "Typedefs.h"
 #include "GradientState.h"
 #include "GradientCommand.h"
 typedef int milliseconds;
 typedef float seconds;
 
-struct GradientState {
+struct GradientStateStruct {
   const GradientCommand * command;
   float percent;
   float percentPerTick;
@@ -80,7 +82,7 @@ int * const rgb[4] = {&red, &green, &blue, 0};
 
 
 GradientCommand currentGradCommand;
-GradientState currentGradState;
+GradientStateStruct currentGradState;
 
 int flashcol1[3], flashcol2[3];
 int flashTimePerColor_ms;
@@ -133,7 +135,7 @@ void processI2CIn (int numBytesRead) {
   recentActivity = true;
   switch (inputBuffer[0]) {
     case 'd' : { toggleDebug(); break; }
-    case 'V' : { processColor(); break; }
+    case 'V' : { processColorFromBuffer(); break; }
     case 'S' : { processGradient(SMOOTH_LOOP);    break;}
     case 'L' : { processGradient(FWD_LOOP);       break;}
     case 'G' : { processGradient(SINGLE_FWD_LOOP);break;}
@@ -152,7 +154,7 @@ void processSerialIn() {
     recentActivity = true;
     switch (inputBuffer[0]) {
       case 'd' : { toggleDebug(); break; }
-      case 'V' : { processColor(); break; }
+      case 'V' : { processColorFromBuffer(); break; }
       case 'S' : { processGradient(SMOOTH_LOOP);    break;}
       case 'L' : { processGradient(FWD_LOOP);       break;}
       case 'G' : { processGradient(SINGLE_FWD_LOOP);break;}
@@ -204,7 +206,7 @@ void processDebugIn() {
       }
 }
 
-void processColor() {
+void processColorFromBuffer() {
   char colorInput[8];
   memcpy(colorInput,&inputBuffer[1],7);
   if (debugMode) {
@@ -274,11 +276,6 @@ void processFlash() {
   } else {
     char hex1[8], hex2[8];
     char timev[8];
-//    for (int x = 0; x<7; x++) {
-//      hex1[x] = inputBuffer[1+x];
-//      hex2[x] = inputBuffer[9+x];
-//      timev[x] = inputBuffer[17+x];
-//    }
     memcpy(hex1,&inputBuffer[1],7);
     memcpy(hex2,&inputBuffer[9],7);
     memcpy(timev,&inputBuffer[17],7);
@@ -330,7 +327,7 @@ void timeoutAction() {
 
 
 
-void gradientPulseSetup( GradientState * gs, const GradientCommand * gc ) {
+void gradientPulseSetup( GradientStateStruct * gs, const GradientCommand * gc ) {
   gs->delayPerTick = (milliseconds) gc->pulselen*1000/GRAD_TOTAL_TICKS; // convert to millis
   gs->percentPerTick = (float) 1/GRAD_TOTAL_TICKS;
   gs->percent = 0;
