@@ -95,7 +95,7 @@
 			"file": "csarc.ino",
 			"settings":
 			{
-				"buffer_size": 16782,
+				"buffer_size": 16755,
 				"line_ending": "Windows"
 			}
 		},
@@ -103,7 +103,7 @@
 			"file": "GradientCommand.h",
 			"settings":
 			{
-				"buffer_size": 818,
+				"buffer_size": 733,
 				"line_ending": "Windows"
 			}
 		},
@@ -111,7 +111,23 @@
 			"file": "GradientState.h",
 			"settings":
 			{
-				"buffer_size": 2583,
+				"buffer_size": 2696,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "Typedefs.h",
+			"settings":
+			{
+				"buffer_size": 170,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "GradientState.cpp",
+			"settings":
+			{
+				"buffer_size": 228,
 				"line_ending": "Windows"
 			}
 		},
@@ -124,10 +140,10 @@
 			}
 		},
 		{
-			"file": "GradientState.cpp",
+			"file": "/C/Users/Gabe/Documents/GitHub/csarc/.gitignore",
 			"settings":
 			{
-				"buffer_size": 0,
+				"buffer_size": 327,
 				"line_ending": "Windows"
 			}
 		}
@@ -155,7 +171,7 @@
 	"build_varint": "",
 	"command_palette":
 	{
-		"height": 87.0,
+		"height": 588.0,
 		"last_filter": "",
 		"selected_items":
 		[
@@ -206,14 +222,33 @@
 	},
 	"file_history":
 	[
+		"/C/Users/Gabe/Documents/GitHub/assassain-trainer/.gitignore",
+		"/C/Users/Gabe/Desktop/pytests/main.py",
+		"/C/Users/Gabe/Desktop/pytests/ChildBlock.py",
+		"/C/Users/Gabe/Desktop/pytests/ChildGenerator.py",
+		"/C/Users/Gabe/Desktop/pytests/Block.py",
+		"/C/Users/Gabe/Desktop/sandbox.py",
+		"/C/Users/Gabe/Desktop/sandbox2.py",
+		"/C/Users/Gabe/Desktop/sandbox3.py",
+		"/C/Users/Gabe/Documents/GitHub/csarc/csarc/GradientState.cpp",
+		"/C/Users/Gabe/Documents/GitHub/csarc/csarc/GradientCommand.cpp",
+		"/C/Users/Gabe/Documents/GitHub/csarc/csarc/Typedefs.h",
+		"/C/Users/Gabe/Documents/GitHub/csarc/csarc/GradientState.h",
+		"/C/Users/Gabe/Documents/GitHub/csarc/csarc/GradientCommand.h",
+		"/C/Users/Gabe/Documents/GitHub/csarc/csarc/csarc.ino",
+		"/C/Users/Gabe/Documents/GitHub/csarc/.pioenvs/uno/libTimedAction.a",
+		"/C/Users/Gabe/AppData/Roaming/Sublime Text 3/Packages/Deviot/DeviotStarter.py",
+		"/C/Users/Gabe/AppData/Roaming/Sublime Text 3/Packages/Deviot/CHANGES.md",
+		"/C/Users/Gabe/AppData/Roaming/Sublime Text 3/Packages/Deviot/Docs/Private_Library.md",
+		"/C/Users/Gabe/AppData/Roaming/Sublime Text 3/Packages/Deviot/Settings-Default/Main.sublime-menu",
+		"/C/Users/Gabe/AppData/Roaming/Sublime Text 3/Packages/Deviot/Settings-Default/Deviot Preferences.sublime-settings",
+		"/C/Users/Gabe/AppData/Roaming/Sublime Text 3/Packages/Deviot/README.md",
+		"/C/Users/Gabe/AppData/Roaming/Sublime Text 3/Packages/Deviot/Settings-Default/Default (Windows).sublime-keymap",
+		"/C/Users/Gabe/AppData/Roaming/Sublime Text 3/Packages/User/Deviot/Deviot Preferences.sublime-settings",
+		"/C/Users/Gabe/AppData/Roaming/Sublime Text 3/Packages/User/Arduino.sublime-settings",
 		"/C/Users/Gabe/Desktop/331/hashtable_tests.py",
 		"/C/Users/Gabe/Desktop/331/Hashtable.py",
 		"/C/Users/Gabe/Desktop/331/q1.py",
-		"/C/Users/Gabe/Documents/GitHub/csarc/csarc/GradientCommand.h",
-		"/C/Users/Gabe/Documents/GitHub/csarc/csarc/GradientState.cpp",
-		"/C/Users/Gabe/Documents/GitHub/csarc/csarc/GradientState.h",
-		"/C/Users/Gabe/Documents/GitHub/csarc/csarc/csarc.ino",
-		"/C/Users/Gabe/Documents/GitHub/csarc/csarc/GradientCommand.cpp",
 		"/C/Users/Gabe/Documents/Arduino/test/test.ino",
 		"/C/Users/Gabe/.platformio/packages/framework-arduinoavr/libraries/LiquidCrystal/examples/Blink/Blink.ino",
 		"/C/Users/Gabe/.platformio/packages/framework-arduinoavr/libraries/SoftwareSerial/examples/SoftwareSerialExample/SoftwareSerialExample.ino",
@@ -221,7 +256,6 @@
 		"/C/Users/Gabe/Desktop/331/AVLTree.py",
 		"/C/Users/Gabe/Desktop/331/AVLTreeTemp.py",
 		"/C/Users/Gabe/Desktop/mazetest.py",
-		"/C/Users/Gabe/Desktop/sandbox.py",
 		"/C/Users/Gabe/Desktop/331/BSTreeTemp.py",
 		"/C/Users/Gabe/Desktop/331/BSTreeTests.py",
 		"/C/Users/Gabe/AppData/Roaming/Sublime Text 3/Packages/User/Anaconda.sublime-settings",
@@ -246,6 +280,11 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"build",
+			"processGradient",
+			"GradientState",
+			"processColor",
+			"processGradient",
 			"testcase",
 			"testCase",
 			"y "
@@ -256,6 +295,8 @@
 		"regex": false,
 		"replace_history":
 		[
+			"GradientStateStruct",
+			"processColorFromBuffer"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -275,15 +316,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 16782,
+						"buffer_size": 16755,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1097,
-								1097
+								0,
+								0
 							]
 						],
 						"settings":
@@ -293,10 +334,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 182.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
@@ -305,15 +346,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 818,
+						"buffer_size": 733,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								96,
-								96
+								121,
+								121
 							]
 						],
 						"settings":
@@ -326,7 +367,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -335,7 +376,7 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2583,
+						"buffer_size": 2696,
 						"regions":
 						{
 						},
@@ -356,17 +397,73 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "Typedefs.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 170,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
 					"type": "text"
 				}
 			]
 		},
 		{
-			"selected": 0,
+			"selected": 2,
 			"sheets":
 			[
 				{
-					"buffer": 3,
+					"buffer": 4,
+					"file": "GradientState.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 228,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
 					"file": "GradientCommand.cpp",
 					"semi_transient": false,
 					"settings":
@@ -396,31 +493,31 @@
 					"type": "text"
 				},
 				{
-					"buffer": 4,
-					"file": "GradientState.cpp",
+					"buffer": 6,
+					"file": "/C/Users/Gabe/Documents/GitHub/csarc/.gitignore",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 0,
+						"buffer_size": 327,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								327,
+								327
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
+							"syntax": "Packages/Text/Plain text.tmLanguage"
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 142.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 0,
 					"type": "text"
 				}
 			]
@@ -454,7 +551,7 @@
 		"cols":
 		[
 			0.0,
-			0.553125,
+			0.56875,
 			1.0
 		],
 		"rows":
@@ -572,6 +669,146 @@
 	{
 		"height": 401.0
 	},
+	"output.Deviot|Build1462837944.571588":
+	{
+		"height": 230.0
+	},
+	"output.Deviot|Build1462838648.481742":
+	{
+		"height": 224.0
+	},
+	"output.Deviot|Build1462838725.141403":
+	{
+		"height": 148.0
+	},
+	"output.Deviot|Build1462838728.333297":
+	{
+		"height": 148.0
+	},
+	"output.Deviot|Build1462838736.753276":
+	{
+		"height": 148.0
+	},
+	"output.Deviot|Build1462838777.278127":
+	{
+		"height": 148.0
+	},
+	"output.Deviot|Build1462838795.18053":
+	{
+		"height": 148.0
+	},
+	"output.Deviot|Build1462838862.317411":
+	{
+		"height": 148.0
+	},
+	"output.Deviot|Build1462838875.623494":
+	{
+		"height": 148.0
+	},
+	"output.Deviot|Build1462838924.492979":
+	{
+		"height": 148.0
+	},
+	"output.Deviot|Build1462838927.988227":
+	{
+		"height": 148.0
+	},
+	"output.Deviot|Build1462839862.000291":
+	{
+		"height": 450.0
+	},
+	"output.Deviot|Build1462839933.723266":
+	{
+		"height": 148.0
+	},
+	"output.Deviot|Build1462839948.161845":
+	{
+		"height": 148.0
+	},
+	"output.Deviot|Build1462839954.72682":
+	{
+		"height": 148.0
+	},
+	"output.Deviot|Build1462839975.523239":
+	{
+		"height": 148.0
+	},
+	"output.Deviot|Build1462839992.539369":
+	{
+		"height": 272.0
+	},
+	"output.Deviot|Build1462840122.155141":
+	{
+		"height": 373.0
+	},
+	"output.Deviot|Build1462840211.267349":
+	{
+		"height": 398.0
+	},
+	"output.Deviot|Build1462840259.411382":
+	{
+		"height": 405.0
+	},
+	"output.Deviot|Build1462840347.006919":
+	{
+		"height": 148.0
+	},
+	"output.Deviot|Build1462840420.354229":
+	{
+		"height": 292.0
+	},
+	"output.Deviot|Build1462840453.121085":
+	{
+		"height": 474.0
+	},
+	"output.Deviot|Build1462840519.21216":
+	{
+		"height": 419.0
+	},
+	"output.Deviot|Build1462840563.970642":
+	{
+		"height": 591.0
+	},
+	"output.Deviot|Build1462840664.802663":
+	{
+		"height": 607.0
+	},
+	"output.Deviot|Build1462840690.804208":
+	{
+		"height": 449.0
+	},
+	"output.Deviot|Build1462840743.210686":
+	{
+		"height": 676.0
+	},
+	"output.Deviot|Build1462840788.457171":
+	{
+		"height": 148.0
+	},
+	"output.Deviot|Build1462841154.606986":
+	{
+		"height": 33.0
+	},
+	"output.Deviot|Build1462880837.417235":
+	{
+		"height": 138.0
+	},
+	"output.Deviot|Build1462880904.358878":
+	{
+		"height": 559.0
+	},
+	"output.Deviot|Build1462881125.864325":
+	{
+		"height": 195.0
+	},
+	"output.Deviot|Build1462881871.949988":
+	{
+		"height": 675.0
+	},
+	"output.Deviot|Build1462882171.022803":
+	{
+		"height": 168.0
+	},
 	"output.Deviot|Pio_Install1461530035.239933":
 	{
 		"height": 148.0
@@ -606,7 +843,7 @@
 	},
 	"output.exec":
 	{
-		"height": 747.0
+		"height": 169.0
 	},
 	"output.find_results":
 	{
@@ -616,7 +853,7 @@
 	"project": "csarc.sublime-project",
 	"replace":
 	{
-		"height": 58.0
+		"height": 94.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -646,7 +883,7 @@
 		],
 		"width": 588.0
 	},
-	"selected_group": 0,
+	"selected_group": 1,
 	"settings":
 	{
 	},
