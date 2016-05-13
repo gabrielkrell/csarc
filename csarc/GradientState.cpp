@@ -6,19 +6,28 @@ GradientState::GradientState() {
 	//careful about behavior here.  Maybe should print
 	//diagnostics if accessed while not fully initialized
 	this->reset();
-}
+};
 
 GradientState::GradientState(GradientCommand gc) {
 	this->setGradientCommand(gc);
-}
+};
 
 void GradientState::setGradientCommand(GradientCommand gc) {
+	if (this->debugMode) {
+		Serial.println("SetCommand:");
+		Serial.println(" reset:");
+	}
 	this->reset();
-	// set up
-	this->setGradientCommand(gc);
+	this->command = gc;
 	this->setDelayPerTick(1 / (gc.pulselen * defaultDelay));
 	// 1 / number of ticks == percent per tick
 	// 1 / (tv * defDelay) == ppt
+
+	if (this->debugMode) {
+		Serial.println(" Command set.");
+		Serial.println(" tickDelay set to"+this->delayPerTick);
+	}
+
 }
 
 milliseconds GradientState::getDelay() {
@@ -71,7 +80,13 @@ void GradientState::tickAndGetColor(int* const output[3]) {
 }
 
 void GradientState::reset() {
-	// zero important things
+	this->percent = 0;
+	this->colorsReversed = false;
+	this->delayPerTick = defaultDelay;
+	if (this->debugMode) {
+		Serial.println("reset done");
+	}
+	// this->debugMode = false;
 }
 
 void GradientState::toggleDebug() {

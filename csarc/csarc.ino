@@ -86,14 +86,14 @@ TimedAction    flashThread = TimedAction(0, flashTimePerColor_ms, &flash); // in
 TimedAction  timeoutThread = TimedAction(TIMEOUT_S * 1000, TIMEOUT_S * 1000,  &timeoutAction);
 
 void setup() {
-  currGradState.setGradientCommand(currentGradCommand);
+  // currGradState.setGradientCommand(currentGradCommand);
   setupLEDs();
   gradientThread.disable();
   flashThread.disable();
   timeoutThread.setEnabled(TIMEOUT_ENABLED);
   Serial.setTimeout(SERIAL_INPUT_WAIT_MS);
   Serial.begin(BAUDRATE);
-//  quickCycle(150); // power-up notification
+ // quickCycle(150); // power-up notification
 
 //  currentGradState.command = &BLUE_ALLIANCE;
 //  gradientPulseSetup( &currentGradState, currentGradState.command);
@@ -252,6 +252,10 @@ void processGradient(GradientMode gm) {
 // we have col1, col2, seconds timeVal, and gm
     currentGradCommand = GradientCommand(col1,col2,gm,timeVal);
     currGradState.setGradientCommand(currentGradCommand);
+    enableGradient();
+    if (debugMode) {
+      Serial.println("processgrad done");
+    }
 
 
     if (debugMode) {
