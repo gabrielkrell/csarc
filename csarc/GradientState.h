@@ -1,14 +1,12 @@
 #ifndef GradientState_h
 #define GradientState_h
+
 #include <Arduino.h>
-
-#ifndef GradientCommand_h
 #include "GradientCommand.h"
-#endif
-
-#ifndef Typedefs_h
 #include "Typedefs.h"
-#endif
+
+extern char* GRADIENT_MODE_TEXTS[];
+
 class GradientState {
 public:
 	GradientState();

@@ -31,19 +31,19 @@ boolean GradientCommand::equals( GradientCommand ogc) {
 }
 
 void GradientCommand::setCol1( int col1[3] ) {
-  memcpy(this->col1,col1,3);
+  memcpy(this->col1,col1,3 *  sizeof(int));
 }
 
 void GradientCommand::setCol2( int col2[3] ) {
-  memcpy(this->col2,col2,3);
+  memcpy(this->col2,col2,3 *  sizeof(int));
 }
 
 void GradientCommand::setCol1( const int col1[3] ) {
-  memcpy(this->col1,col1,3);
+  memcpy(this->col1,col1,3 *  sizeof(int));
 }
 
 void GradientCommand::setCol2( const int col2[3] ) {
-  memcpy(this->col2,col2,3);
+  memcpy(this->col2,col2,3 *  sizeof(int));
 }
 
 void GradientCommand::setMode( GradientMode gradMode) {
@@ -54,3 +54,10 @@ void GradientCommand::setPulse( seconds timeInSeconds ) {
 	this->pulselen = 1000*timeInSeconds; // store in millis for precision
 }
 
+void GradientCommand::print() {
+  Serial.println("GradientCommand:");
+  Serial.print(" Col1: [ ");  GradientCommand::printA(col1); Serial.println(" ]");
+  Serial.print(" Col2: [ ");  GradientCommand::printA(col2); Serial.println(" ]");
+  Serial.print(" GradMode: "); Serial.println(GRADIENT_MODE_TEXTS[this->gradMode]);
+  Serial.print(" Pulselen: "); Serial.println(this->pulselen);
+}

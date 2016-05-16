@@ -61,6 +61,7 @@ const int  BLUE[3] = {0,   0,   255};
 const int WHITE[3] = {255, 255, 255};
 const GradientCommand RED_ALLIANCE = GradientCommand( RED, OFF, SMOOTH_LOOP, 2);
 const GradientCommand BLUE_ALLIANCE = GradientCommand( BLUE, OFF, SMOOTH_LOOP, 2);
+extern char* GRADIENT_MODE_TEXTS[];
 
 // ---------- GLOBAL VARIABLES ----------
 boolean debugMode = true;
@@ -205,7 +206,7 @@ void processDebugIn() {
 
 void processColorFromBuffer() {
   char colorInput[8];
-  memcpy(colorInput,&inputBuffer[1],7);
+  memcpy(colorInput,&inputBuffer[1],7 * sizeof(char));
   if (debugMode) {
     Serial.print("Serial input:"); 
     Serial.println(colorInput);
@@ -259,13 +260,15 @@ void processGradient(GradientMode gm) {
 
 
     if (debugMode) {
-      Serial.println("Gradient set:");
-      Serial.println("col1: ");
-      Serial.print(col1[0]); Serial.print(" "); Serial.print(col1[1]); Serial.print(" "); Serial.println(col1[2]);
-      Serial.println("col2: ");
-      Serial.print(col2[0]); Serial.print(" "); Serial.print(col2[1]); Serial.print(" "); Serial.println(col2[2]);
-      Serial.print("timeVal: ");
-      Serial.println(timeVal);
+      // Serial.println("Gradient set with this stuff:");
+      // Serial.println("col1: ");
+      // Serial.print(col1[0]); Serial.print(" "); Serial.print(col1[1]); Serial.print(" "); Serial.println(col1[2]);
+      // Serial.println("col2: ");
+      // Serial.print(col2[0]); Serial.print(" "); Serial.print(col2[1]); Serial.print(" "); Serial.println(col2[2]);
+      // Serial.print("timeVal: ");
+      // Serial.println(timeVal);
+
+      currentGradCommand.print();
     }
   }
 }
@@ -278,9 +281,9 @@ void processFlash() {
   } else {
     char hex1[8], hex2[8];
     char timev[8];
-    memcpy(hex1,&inputBuffer[1],7);
-    memcpy(hex2,&inputBuffer[9],7);
-    memcpy(timev,&inputBuffer[17],7);
+    memcpy(hex1,&inputBuffer[1],7 * sizeof(char));
+    memcpy(hex2,&inputBuffer[9],7 * sizeof(char));
+    memcpy(timev,&inputBuffer[17],7 * sizeof(char));
     int col1[3],col2[3];    
     int *const col1p[3] = {&col1[0],&col1[1],&col1[2]};
     int *const col2p[3] = {&col2[0],&col2[1],&col2[2]};
@@ -488,7 +491,8 @@ boolean redundantFlashCommand(const int col1[], const int col2[], int fTime) {
 }
 
 void printArray( int *ptr, int len) {
-  for(int i = 0; i < len; i++)
+  for(int i = 0; i < len; i++) {
     Serial.println( ptr[i]);
+  }
 }
 
