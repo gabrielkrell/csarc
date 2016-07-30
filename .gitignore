@@ -34,5 +34,5 @@
 platformio.ini
 
 # local Sublime settings
-csarc.sublime-workspace
-csarc.sublime-project
+*.sublime-workspace
+*.sublime-project
